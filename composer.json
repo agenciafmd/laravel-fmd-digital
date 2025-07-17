@@ -1,0 +1,32 @@
+{
+    "name": "agenciafmd/laravel-fmd-digital",
+    "description": "Integração com F&MD Digital",
+    "homepage": "https://github.com/agenciafmd/laravel-fmd-digital",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Carlos Tamagawa",
+            "email": "carlos@fmd.ag",
+            "homepage": "https://fmd.ag/",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "laravel/framework": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Agenciafmd\\FmdDigital\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Agenciafmd\\FmdDigital\\Providers\\FmdDigitalServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
