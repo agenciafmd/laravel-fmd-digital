@@ -18,6 +18,6 @@ class FmdDigitalServiceProvider extends ServiceProvider
 
     private function registerConfigs(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../../config/laravel-fmd-digital.php', 'laravel-fmd-digital');
+        $this->mergeConfigFrom(__DIR__ . '/../config/laravel-fmd-digital.php', 'laravel-fmd-digital');
     }
 }
