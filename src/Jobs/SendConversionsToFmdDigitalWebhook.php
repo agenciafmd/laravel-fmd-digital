@@ -35,10 +35,12 @@ class SendConversionsToFmdDigitalWebhook implements ShouldQueue
 
         $client = $this->getClientRequest();
 
-        $formParams = $this->data;
-
         $response = $client->request('POST', config('laravel-fmd-digital.webhook'), [
-            'form_params' => $formParams,
+            'json' => $this->data,
+            'headers' => [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ],
         ]);
 
         if (($response->getStatusCode() !== 200) && (config('laravel-fmd-digital.error_email'))) {
