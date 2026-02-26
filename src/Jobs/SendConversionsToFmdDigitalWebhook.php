@@ -22,6 +22,20 @@ class SendConversionsToFmdDigitalWebhook implements ShouldQueue
 
     protected array $data;
 
+    /**
+     * The number of times the job may be attempted.
+     *
+     * @var int
+     */
+    public $tries = 5;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var int
+     */
+    public $retryAfter = 60;
+
     public function __construct(array $data = [])
     {
         $this->data = $data;
@@ -33,21 +47,34 @@ class SendConversionsToFmdDigitalWebhook implements ShouldQueue
             return;
         }
 
-        $client = $this->getClientRequest();
+        try {
+            $client = $this->getClientRequest();
 
-        $response = $client->request('POST', config('laravel-fmd-digital.webhook'), [
-            'json' => $this->data,
-            'headers' => [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-            ],
-        ]);
+            $response = $client->request('POST', config('laravel-fmd-digital.webhook'), [
+                'json' => $this->data,
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                ],
+            ]);
 
-        if (($response->getStatusCode() !== 200) && (config('laravel-fmd-digital.error_email'))) {
-            Mail::raw($response->getBody(), function (Message $message) {
-                $message->to(config('laravel-fmd-digital.error_email'))
-                    ->subject('[F&MD Digital][' . config('app.url') . '] - Falha na integração - ' . now()->format('d/m/Y H:i:s'));
-            });
+            if (($response->getStatusCode() !== 200) && (config('laravel-fmd-digital.error_email'))) {
+                Mail::raw($response->getBody(), function (Message $message) {
+                    $message->to(config('laravel-fmd-digital.error_email'))
+                        ->subject('[F&MD Digital][' . config('app.url') . '] - Falha na integração - ' . now()->format('d/m/Y H:i:s'));
+                });
+
+                // IMPORTANTE: força falha do job → Laravel faz retry
+                throw new \Exception('Webhook retornou status: '.$response->getStatusCode());
+            }
+
+        } catch (\Throwable $e) {
+            \Log::error('Erro no envio webhook FMD Digital', [
+                'error' => $e->getMessage(),
+                'data' => $this->data,
+            ]);
+
+            throw $e; // <- ESSENCIAL para retry da fila
         }
     }
 
